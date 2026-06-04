@@ -1,0 +1,38 @@
+Project Technology Stack Overview
+---------------------------------
+
+1. Frontend Library: React (v18.2.0)
+   - Where it is used: Throughout the entire `src/` directory.
+   - How it is used: It is the foundation of the web application, utilizing functional components, custom hooks (e.g., `src/hooks/`), and state management for building the Single Page Application (SPA).
+
+2. Build Tool & Bundler: Vite (v5.1.0)
+   - Where it is used: At the project root via `vite.config.js` and package scripts.
+   - How it is used: Serves the web app locally with lightning-fast Hot Module Replacement (HMR) during development (`npm run dev`) and bundles the codebase efficiently into static assets for production deployment (`npm run build`).
+
+3. CSS Framework: Tailwind CSS (v3.4.1) along with PostCSS and Autoprefixer
+   - Where it is used: Configured in `tailwind.config.js` and applied throughout all `.jsx` files in `src/components/`, `src/pages/`, etc. Global imports reside in `src/index.css`.
+   - How it is used: Provides utility-first styling. Predefined class names are applied directly to JSX elements, ensuring responsive layouts, robust dark mode support, and consistent design systems without writing custom CSS files.
+
+4. Routing: React Router DOM (v6.22.0)
+   - Where it is used: Configured at the core app level (e.g. `src/routes/` and `src/App.jsx`) and utilized in components like Navbar for navigation.
+   - How it is used: Handles client-side routing. It maps URLs to specific page components (like Home, Properties, MapPage, Dashboards, and Login) allowing seamless transitions without full page reloads.
+
+5. Interactive Maps: Leaflet (v1.9.4) & React Leaflet (v4.2.1)
+   - Where it is used: In map-centric views such as `src/pages/MapPage.jsx` and potentially `src/pages/PropertyDetails.jsx`.
+   - How it is used: Renders interactive, scrollable map layers and places dynamic markers to visualize exact property locations for users. React-Leaflet adapts Leaflet plugins into the React component lifecycle seamlessly.
+
+6. Animations & Transitions: Framer Motion (v11.0.0)
+   - Where it is used: Across multiple UI components and pages (like Home sections, Property Cards, and Modals) to enrich the aesthetic experience.
+   - How it is used: Wraps standard tags into `<motion.div>` tags to orchestrate scroll reveals, hover interactions, smooth page transitions, and advanced layout shifts.
+
+7. Vector Icons: React Icons (v5.0.0)
+   - Where it is used: Frequently placed globally across buttons, navigation bars, feature lists, properties UI, and footers.
+   - How it is used: Injects scalable SVG icons directly as React components, permitting simple manipulation of icon sizes and colors using standard Tailwind CSS or inline styles.
+
+8. Conversational / BI Chatbot Features
+   - Where it is used: In the `src/chatbot/` directory and globally embedded widgets.
+   - How it is used: Houses the logic and components for a dynamic chatbot, enabling interactive natural language processing and Business Intelligence rendering (extracting insights right inside the widget).
+   
+9. Local Data Handling:
+   - Where it is used: Inside the `src/data/` directory.
+   - How it is used: Keeps mock data arrays for properties listings, users, testimonials, and statistics to simulate real-world backend interaction while powering various components iteratively.
