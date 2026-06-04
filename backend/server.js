@@ -37,10 +37,15 @@ app.use(helmet());
 app.use(cookieParser());
 
 // Security: CORS — restrict to frontend origin
+const cors = require('cors');
+
 app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: [
+        'https://urbanestates-frontend.onrender.com',
+        'http://localhost:5173'
+    ],
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
@@ -149,11 +154,11 @@ app.post('/api/chat', async (req, res) => {
         const { messages } = req.body;
 
         if (!process.env.GEMINI_API_KEY) {
-            return res.json({ 
+            return res.json({
                 text: JSON.stringify({
                     type: "text",
                     content: "GEMINI_API_KEY is missing in backend/.env. Please add it to enable the AI."
-                }) 
+                })
             });
         }
 
@@ -173,7 +178,7 @@ app.post('/api/chat', async (req, res) => {
         });
 
         const data = await response.json();
-        
+
         if (!response.ok) {
             console.warn('Gemini API Warning/Error:', data.error?.message);
             // Graceful fallback for API limits (503 overloaded, 429 quota, etc)
@@ -204,7 +209,7 @@ app.post('/api/chat', async (req, res) => {
 const path = require('path');
 if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.join(__dirname, '../dist')));
-    
+
     app.get('*', (req, res) => {
         if (!req.path.startsWith('/api')) {
             res.sendFile(path.join(__dirname, '../dist', 'index.html'));
