@@ -15,7 +15,12 @@ const bookingRoutes = require('./routes/bookingRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const legalRoutes = require('./routes/legalRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
-
+app.get('/api/test-cors', (req, res) => {
+    res.json({
+        success: true,
+        origin: req.headers.origin
+    });
+});
 dotenv.config();
 
 // Validate critical environment variables
@@ -37,7 +42,7 @@ app.use(helmet());
 app.use(cookieParser());
 
 // Security: CORS — restrict to frontend origin
-const cors = require('cors');
+
 
 app.use(cors({
     origin: function (origin, callback) {
