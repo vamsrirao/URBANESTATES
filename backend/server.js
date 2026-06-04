@@ -219,6 +219,7 @@ app.post('/api/chat', async (req, res) => {
 
 // Serve frontend static build in production
 const path = require('path');
+
 if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.join(__dirname, '../dist')));
 
@@ -228,7 +229,6 @@ if (process.env.NODE_ENV === 'production') {
         }
     });
 }
-
 // ─── Start Server ────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
