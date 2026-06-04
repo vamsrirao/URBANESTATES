@@ -40,13 +40,19 @@ app.use(cookieParser());
 const cors = require('cors');
 
 app.use(cors({
-    origin: [
-        'https://urbanestates-frontend.onrender.com',
-        'http://localhost:5173'
-    ],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    origin: function (origin, callback) {
+        const allowedOrigins = [
+            'https://urbanestates-frontend.onrender.com',
+            'http://localhost:5173'
+        ];
+
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('CORS not allowed'));
+        }
+    },
+    credentials: true
 }));
 
 // Body parser with size limit to prevent large payload attacks
