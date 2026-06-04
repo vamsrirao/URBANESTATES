@@ -15,12 +15,7 @@ const bookingRoutes = require('./routes/bookingRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const legalRoutes = require('./routes/legalRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
-app.get('/api/test-cors', (req, res) => {
-    res.json({
-        success: true,
-        origin: req.headers.origin
-    });
-});
+
 dotenv.config();
 
 // Validate critical environment variables
@@ -35,6 +30,12 @@ if (missingVars.length > 0) {
 connectDB();
 
 const app = express();
+app.get('/api/test-cors', (req, res) => {
+    res.json({
+        success: true,
+        origin: req.headers.origin
+    });
+});
 // Security: HTTP security headers
 app.use(helmet());
 
