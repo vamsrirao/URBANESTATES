@@ -1,78 +1,21 @@
-const nodemailer = require('nodemailer');
-const dns = require('dns');
+const sgMail = require('@sendgrid/mail');
 
-// Pre-validate SMTP details and print startup guidance
+// Check if SendGrid is configured
 const hasSmtpConfig = () => {
-    return !!(process.env.EMAIL_USER && process.env.EMAIL_PASS);
+    return !!process.env.SENDGRID_API_KEY;
 };
 
 if (!hasSmtpConfig()) {
-    console.warn('\n⚠️  [UrbanEstates Email Service] WARNING: SMTP credentials (EMAIL_USER & EMAIL_PASS) are not defined in backend/.env.');
+    console.warn('\n⚠️  [UrbanEstates Email Service] WARNING: SENDGRID_API_KEY is not defined in backend/.env.');
     console.warn('👉 Developer fallback is active: OTP verification codes will be logged directly to the server terminal console.\n');
-}
-
-let transporterInstance = null;
-
-const getTransporter = async () => {
-    if (transporterInstance) return transporterInstance;
-
-    return new Promise((resolve, reject) => {
-        const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com';
-        const smtpPort = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT) : 587;
-        const isSecure = smtpPort === 465;
-
-        // Explicitly resolve IPv4 address to bypass potential IPv6 routing issues
-        dns.resolve4(smtpHost, (err, addresses) => {
-            if (err || !addresses || addresses.length === 0) {
-                console.error(`DNS IPv4 lookup failed for ${smtpHost}, falling back to default lookup`, err);
-                transporterInstance = nodemailer.createTransport({
-                    host: smtpHost,
-                    port: smtpPort,
-                    secure: isSecure,
-                    auth: {
-                        user: process.env.EMAIL_USER,
-                        pass: process.env.EMAIL_PASS,
-                    }
-                });
-                return resolve(transporterInstance);
-            }
-
-            const ipv4Address = addresses[0];
-            console.log(`[Email Service] Resolved ${smtpHost} strictly to IPv4: ${ipv4Address}`);
-
-            transporterInstance = nodemailer.createTransport({
-                host: ipv4Address,
-                port: smtpPort,
-                secure: isSecure,
-                auth: {
-                    user: process.env.EMAIL_USER,
-                    pass: process.env.EMAIL_PASS,
-                },
-                tls: {
-                    servername: smtpHost 
-                }
-            });
-
-            resolve(transporterInstance);
-        });
-    });
-};
-
-if (hasSmtpConfig()) {
-    getTransporter().then(t => {
-        t.verify((err, success) => {
-            if (err) {
-                console.error('SMTP VERIFY ERROR:', err);
-            } else {
-                console.log('SMTP READY');
-            }
-        });
-    });
+} else {
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    console.log('SendGrid Mail Service Initialized');
 }
 
 /**
- * Sends a 6-digit OTP email to a user.
- * Falls back to console logging if SMTP settings are missing.
+ * Sends a 6-digit OTP email to a user using SendGrid API (bypasses Render SMTP port blocking).
+ * Falls back to console logging if API key is missing.
  * 
  * @param {string} email - Destination email
  * @param {string} otp - The raw 6-digit verification code
@@ -89,9 +32,19 @@ const sendOTPEmail = async (email, otp, name) => {
     }
 
     try {
-        const mailOptions = {
-            from: process.env.EMAIL_FROM || `"UrbanEstates" <${process.env.EMAIL_USER}>`,
+        // Fallback sequentially from SENDGRID_FROM_EMAIL to EMAIL_FROM to EMAIL_USER
+        const fromEmail = process.env.SENDGRID_FROM_EMAIL || process.env.EMAIL_FROM || process.env.EMAIL_USER;
+        
+        if (!fromEmail) {
+            throw new Error('No sender email configured. Set SENDGRID_FROM_EMAIL in .env');
+        }
+
+        const msg = {
             to: email,
+            from: {
+                name: 'UrbanEstates',
+                email: fromEmail
+            },
             subject: 'Verify Your Email - UrbanEstates',
             html: `
                 <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9fbfd; border: 1px solid #e1e8ed; border-radius: 12px; color: #1e293b;">
@@ -121,11 +74,13 @@ const sendOTPEmail = async (email, otp, name) => {
             `
         };
 
-        const mailTransporter = await getTransporter();
-        await mailTransporter.sendMail(mailOptions);
+        await sgMail.send(msg);
         return { success: true, message: 'Email sent successfully.' };
     } catch (error) {
-        console.error('Error sending email via Nodemailer:', error);
+        console.error('Error sending email via SendGrid:', error);
+        if (error.response) {
+            console.error(error.response.body);
+        }
         return { success: false, message: error.message };
     }
 };
