@@ -1,11 +1,6 @@
 const nodemailer = require('nodemailer');
 const dns = require('dns');
 
-// Fix for Render.com and other environments where IPv6 routing fails for SMTP
-if (dns.setDefaultResultOrder) {
-    dns.setDefaultResultOrder('ipv4first');
-}
-
 // Pre-validate SMTP details and print startup guidance
 const hasSmtpConfig = () => {
     return !!(process.env.EMAIL_USER && process.env.EMAIL_PASS);
@@ -16,29 +11,59 @@ if (!hasSmtpConfig()) {
     console.warn('👉 Developer fallback is active: OTP verification codes will be logged directly to the server terminal console.\n');
 }
 
-// Configure the Nodemailer transporter explicitly for IPv4 to fix Render timeout issues
-const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // Use SSL/TLS
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-    },
-    // Force Node.js to use IPv4 instead of IPv6 when resolving the host
-    tls: {
-        rejectUnauthorized: true,
-    },
-    family: 4 // IPv4 only
-});
+let transporterInstance = null;
+
+const getTransporter = async () => {
+    if (transporterInstance) return transporterInstance;
+
+    return new Promise((resolve, reject) => {
+        // Explicitly resolve IPv4 address to completely bypass Render's broken IPv6 routing
+        dns.resolve4('smtp.gmail.com', (err, addresses) => {
+            if (err || !addresses || addresses.length === 0) {
+                console.error('DNS IPv4 lookup failed for smtp.gmail.com, falling back to default lookup', err);
+                transporterInstance = nodemailer.createTransport({
+                    host: 'smtp.gmail.com',
+                    port: 465,
+                    secure: true,
+                    auth: {
+                        user: process.env.EMAIL_USER,
+                        pass: process.env.EMAIL_PASS,
+                    }
+                });
+                return resolve(transporterInstance);
+            }
+
+            const ipv4Address = addresses[0];
+            console.log(`[Email Service] Resolved smtp.gmail.com strictly to IPv4: ${ipv4Address}`);
+
+            transporterInstance = nodemailer.createTransport({
+                host: ipv4Address,
+                port: 465,
+                secure: true,
+                auth: {
+                    user: process.env.EMAIL_USER,
+                    pass: process.env.EMAIL_PASS,
+                },
+                tls: {
+                    // Important: ensures SSL cert matches the domain, not the raw IP address
+                    servername: 'smtp.gmail.com' 
+                }
+            });
+
+            resolve(transporterInstance);
+        });
+    });
+};
 
 if (hasSmtpConfig()) {
-    transporter.verify((err, success) => {
-        if (err) {
-            console.error('SMTP VERIFY ERROR:', err);
-        } else {
-            console.log('SMTP READY');
-        }
+    getTransporter().then(t => {
+        t.verify((err, success) => {
+            if (err) {
+                console.error('SMTP VERIFY ERROR:', err);
+            } else {
+                console.log('SMTP READY');
+            }
+        });
     });
 }
 
@@ -93,7 +118,8 @@ const sendOTPEmail = async (email, otp, name) => {
             `
         };
 
-        await transporter.sendMail(mailOptions);
+        const mailTransporter = await getTransporter();
+        await mailTransporter.sendMail(mailOptions);
         return { success: true, message: 'Email sent successfully.' };
     } catch (error) {
         console.error('Error sending email via Nodemailer:', error);
