@@ -30,14 +30,18 @@ const sendOTPEmail = async (email, otp, name) => {
 
     try {
         const transporter = nodemailer.createTransport({
-            service: "gmail",
+            service: 'gmail',
             auth: {
                 user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS
+                pass: process.env.EMAIL_PASS, // App Password
             },
-            connectionTimeout: 10000,
-            greetingTimeout: 10000,
-            socketTimeout: 10000
+        });
+        transporter.verify((err, success) => {
+            if (err) {
+                console.error('SMTP VERIFY ERROR:', err);
+            } else {
+                console.log('SMTP READY');
+            }
         });
 
         const mailOptions = {
