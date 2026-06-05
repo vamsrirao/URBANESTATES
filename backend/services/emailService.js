@@ -33,17 +33,26 @@ const sendOTPEmail = async (email, otp, name) => {
 
     try {
         // Fallback sequentially from SENDGRID_FROM_EMAIL to EMAIL_FROM to EMAIL_USER
-        const fromEmail = process.env.SENDGRID_FROM_EMAIL || process.env.EMAIL_FROM || process.env.EMAIL_USER;
+        let fromEmailRaw = process.env.SENDGRID_FROM_EMAIL || process.env.EMAIL_FROM || process.env.EMAIL_USER;
         
-        if (!fromEmail) {
+        if (!fromEmailRaw) {
             throw new Error('No sender email configured. Set SENDGRID_FROM_EMAIL in .env');
         }
+
+        // Clean the email address in case it's in the format "Name" <email@example.com>
+        let cleanFromEmail = fromEmailRaw.trim();
+        const emailMatch = cleanFromEmail.match(/<([^>]+)>/);
+        if (emailMatch) {
+            cleanFromEmail = emailMatch[1].trim();
+        }
+
+        console.log(`[SendGrid] Attempting to send from strictly cleaned email: '${cleanFromEmail}'`);
 
         const msg = {
             to: email,
             from: {
                 name: 'UrbanEstates',
-                email: fromEmail
+                email: cleanFromEmail
             },
             subject: 'Verify Your Email - UrbanEstates',
             html: `
