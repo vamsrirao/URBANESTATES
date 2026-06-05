@@ -17,14 +17,18 @@ const getTransporter = async () => {
     if (transporterInstance) return transporterInstance;
 
     return new Promise((resolve, reject) => {
-        // Explicitly resolve IPv4 address to completely bypass Render's broken IPv6 routing
-        dns.resolve4('smtp.gmail.com', (err, addresses) => {
+        const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com';
+        const smtpPort = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT) : 587;
+        const isSecure = smtpPort === 465;
+
+        // Explicitly resolve IPv4 address to bypass potential IPv6 routing issues
+        dns.resolve4(smtpHost, (err, addresses) => {
             if (err || !addresses || addresses.length === 0) {
-                console.error('DNS IPv4 lookup failed for smtp.gmail.com, falling back to default lookup', err);
+                console.error(`DNS IPv4 lookup failed for ${smtpHost}, falling back to default lookup`, err);
                 transporterInstance = nodemailer.createTransport({
-                    host: 'smtp.gmail.com',
-                    port: 587,
-                    secure: false,
+                    host: smtpHost,
+                    port: smtpPort,
+                    secure: isSecure,
                     auth: {
                         user: process.env.EMAIL_USER,
                         pass: process.env.EMAIL_PASS,
@@ -34,18 +38,18 @@ const getTransporter = async () => {
             }
 
             const ipv4Address = addresses[0];
-            console.log(`[Email Service] Resolved smtp.gmail.com strictly to IPv4: ${ipv4Address}`);
+            console.log(`[Email Service] Resolved ${smtpHost} strictly to IPv4: ${ipv4Address}`);
 
             transporterInstance = nodemailer.createTransport({
                 host: ipv4Address,
-                port: 587,
-                secure: false, // upgrade later with STARTTLS
+                port: smtpPort,
+                secure: isSecure,
                 auth: {
                     user: process.env.EMAIL_USER,
                     pass: process.env.EMAIL_PASS,
                 },
                 tls: {
-                    servername: 'smtp.gmail.com' 
+                    servername: smtpHost 
                 }
             });
 
