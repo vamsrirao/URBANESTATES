@@ -23,7 +23,8 @@ export default function HeroAIInput({ onResponse, isLoading, setIsLoading }) {
         setQuery('')
 
         try {
-            const res = await fetch('http://localhost:5000/api/chat', {
+            const apiUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/chat`;
+            const res = await fetch(apiUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

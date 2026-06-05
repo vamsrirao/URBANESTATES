@@ -3,7 +3,7 @@
  * API service layer for in-app notifications.
  */
 
-const API_BASE = 'http://localhost:5000/api/notifications'
+const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/notifications`;
 
 /**
  * Fetch current user's notifications

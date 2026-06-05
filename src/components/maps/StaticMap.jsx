@@ -115,8 +115,8 @@ export default function StaticMap({ properties = [], center = [17.4400, 78.3900]
         if (!cachedData[layerId]) {
             setLoadingLayers(prev => [...prev, layerId]);
             try {
-                // Determine API environment dynamically if possible, or assume localhost default during DEV
-                const apiUrl = `http://localhost:5000/api/insights/${layerId}`;
+                // Determine API environment dynamically
+                const apiUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/insights/${layerId}`;
                 const response = await fetch(apiUrl);
                 if (!response.ok) throw new Error('API fetching failed');
                 const data = await response.json();
