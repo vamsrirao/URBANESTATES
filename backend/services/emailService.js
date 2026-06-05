@@ -23,8 +23,8 @@ const getTransporter = async () => {
                 console.error('DNS IPv4 lookup failed for smtp.gmail.com, falling back to default lookup', err);
                 transporterInstance = nodemailer.createTransport({
                     host: 'smtp.gmail.com',
-                    port: 465,
-                    secure: true,
+                    port: 587,
+                    secure: false,
                     auth: {
                         user: process.env.EMAIL_USER,
                         pass: process.env.EMAIL_PASS,
@@ -38,14 +38,13 @@ const getTransporter = async () => {
 
             transporterInstance = nodemailer.createTransport({
                 host: ipv4Address,
-                port: 465,
-                secure: true,
+                port: 587,
+                secure: false, // upgrade later with STARTTLS
                 auth: {
                     user: process.env.EMAIL_USER,
                     pass: process.env.EMAIL_PASS,
                 },
                 tls: {
-                    // Important: ensures SSL cert matches the domain, not the raw IP address
                     servername: 'smtp.gmail.com' 
                 }
             });
