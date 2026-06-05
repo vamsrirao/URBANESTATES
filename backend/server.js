@@ -30,7 +30,7 @@ if (missingVars.length > 0) {
 connectDB();
 
 const app = express();
-app.set('trust proxy', true);
+app.set('trust proxy', 1);
 app.get('/api/test-cors', (req, res) => {
     res.json({
         success: true,
