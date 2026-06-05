@@ -1,4 +1,10 @@
 const nodemailer = require('nodemailer');
+const dns = require('dns');
+
+// Fix for Render.com and other environments where IPv6 routing fails for SMTP
+if (dns.setDefaultResultOrder) {
+    dns.setDefaultResultOrder('ipv4first');
+}
 
 // Pre-validate SMTP details and print startup guidance
 const hasSmtpConfig = () => {
