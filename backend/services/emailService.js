@@ -16,6 +16,32 @@ if (!hasSmtpConfig()) {
     console.warn('👉 Developer fallback is active: OTP verification codes will be logged directly to the server terminal console.\n');
 }
 
+// Configure the Nodemailer transporter explicitly for IPv4 to fix Render timeout issues
+const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // Use SSL/TLS
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+    },
+    // Force Node.js to use IPv4 instead of IPv6 when resolving the host
+    tls: {
+        rejectUnauthorized: true,
+    },
+    family: 4 // IPv4 only
+});
+
+if (hasSmtpConfig()) {
+    transporter.verify((err, success) => {
+        if (err) {
+            console.error('SMTP VERIFY ERROR:', err);
+        } else {
+            console.log('SMTP READY');
+        }
+    });
+}
+
 /**
  * Sends a 6-digit OTP email to a user.
  * Falls back to console logging if SMTP settings are missing.
@@ -35,21 +61,6 @@ const sendOTPEmail = async (email, otp, name) => {
     }
 
     try {
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS, // App Password
-            },
-        });
-        transporter.verify((err, success) => {
-            if (err) {
-                console.error('SMTP VERIFY ERROR:', err);
-            } else {
-                console.log('SMTP READY');
-            }
-        });
-
         const mailOptions = {
             from: process.env.EMAIL_FROM || `"UrbanEstates" <${process.env.EMAIL_USER}>`,
             to: email,

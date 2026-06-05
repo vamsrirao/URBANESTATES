@@ -73,7 +73,10 @@ const generateAndSendOTP = async (user) => {
     await user.save({ validateBeforeSave: false });
 
     // Send email (contains raw OTP)
-    await sendOTPEmail(user.email, otp, user.name);
+    const emailResult = await sendOTPEmail(user.email, otp, user.name);
+    if (!emailResult.success) {
+        throw new Error(`Email delivery failed: ${emailResult.message}`);
+    }
 };
 
 // @desc    Register a new user (Verification Pending)
