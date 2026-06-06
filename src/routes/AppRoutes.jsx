@@ -32,13 +32,33 @@ const BuyerDocuments = lazy(() => import('../pages/Dashboard/Buyer/BuyerDocument
 const BuyerSavedSearches = lazy(() => import('../pages/Dashboard/Buyer/BuyerSavedSearches'))
 const BuyerActivity = lazy(() => import('../pages/Dashboard/Buyer/BuyerActivity'))
 
-// Other Roles (Placeholders mapped to their old monolithic components until refactored)
-const SellerDashboard = lazy(() => import('../pages/Dashboard/SellerDashboard'))
-const LawyerDashboard = lazy(() => import('../pages/Dashboard/LawyerDashboard'))
+// Seller Routes
+const SellerLayout = lazy(() => import('../pages/Dashboard/Seller/SellerLayout'))
+const SellerOverview = lazy(() => import('../pages/Dashboard/Seller/SellerOverview'))
+const SellerProperties = lazy(() => import('../pages/Dashboard/Seller/SellerProperties'))
+const SellerAddProperty = lazy(() => import('../pages/Dashboard/Seller/SellerAddProperty'))
+
+// Lawyer Routes
+const LawyerLayout = lazy(() => import('../pages/Dashboard/Lawyer/LawyerLayout'))
+const LawyerVerify = lazy(() => import('../pages/Dashboard/Lawyer/LawyerVerify'))
+const LawyerHistory = lazy(() => import('../pages/Dashboard/Lawyer/LawyerHistory'))
+const LawyerBookings = lazy(() => import('../pages/Dashboard/Lawyer/LawyerBookings'))
+const LawyerNotifications = lazy(() => import('../pages/Dashboard/Lawyer/LawyerNotifications'))
+const DashboardLawyerProfile = lazy(() => import('../pages/Dashboard/Lawyer/LawyerProfile'))
 
 // Agent Routes
 const AgentLayout = lazy(() => import('../pages/Dashboard/Agent/AgentLayout'))
 const AgentOverview = lazy(() => import('../pages/Dashboard/Agent/AgentOverview'))
+const AgentProperties = lazy(() => import('../pages/Dashboard/Agent/AgentProperties'))
+const AgentLeads = lazy(() => import('../pages/Dashboard/Agent/AgentLeads'))
+const AgentInquiries = lazy(() => import('../pages/Dashboard/Agent/AgentInquiries'))
+const AgentScheduledVisits = lazy(() => import('../pages/Dashboard/Agent/AgentScheduledVisits'))
+const AgentBuyers = lazy(() => import('../pages/Dashboard/Agent/AgentBuyers'))
+const AgentDeals = lazy(() => import('../pages/Dashboard/Agent/AgentDeals'))
+const AgentCalendar = lazy(() => import('../pages/Dashboard/Agent/AgentCalendar'))
+const AgentTasks = lazy(() => import('../pages/Dashboard/Agent/AgentTasks'))
+const AgentMessages = lazy(() => import('../pages/Dashboard/Agent/AgentMessages'))
+const AgentReports = lazy(() => import('../pages/Dashboard/Agent/AgentReports'))
 
 // Loading fallback for lazy routes
 const PageLoader = () => (
@@ -90,17 +110,37 @@ export default function AppRoutes() {
                         <Route path="activity" element={<BuyerActivity />} />
                     </Route>
 
-                    {/* Seller Routes (Currently monolithic, to be refactored later) */}
-                    <Route path="seller" element={<ProtectedRoute role="seller"><SellerDashboard /></ProtectedRoute>} />
+                    {/* Seller Routes */}
+                    <Route path="seller" element={<ProtectedRoute role="seller"><SellerLayout /></ProtectedRoute>}>
+                        <Route index element={<SellerOverview />} />
+                        <Route path="properties" element={<SellerProperties />} />
+                        <Route path="add-property" element={<SellerAddProperty />} />
+                    </Route>
 
                     {/* Agent Routes */}
                     <Route path="agent" element={<ProtectedRoute role="agent"><AgentLayout /></ProtectedRoute>}>
                         <Route index element={<AgentOverview />} />
-                        <Route path="*" element={<AgentOverview />} /> {/* Fallback to overview for scaffolding */}
+                        <Route path="properties" element={<AgentProperties />} />
+                        <Route path="leads" element={<AgentLeads />} />
+                        <Route path="inquiries" element={<AgentInquiries />} />
+                        <Route path="scheduled-visits" element={<AgentScheduledVisits />} />
+                        <Route path="buyers" element={<AgentBuyers />} />
+                        <Route path="deals" element={<AgentDeals />} />
+                        <Route path="calendar" element={<AgentCalendar />} />
+                        <Route path="tasks" element={<AgentTasks />} />
+                        <Route path="messages" element={<AgentMessages />} />
+                        <Route path="reports" element={<AgentReports />} />
                     </Route>
 
-                    {/* Lawyer Routes (Currently monolithic, to be refactored later) */}
-                    <Route path="lawyer" element={<ProtectedRoute role="lawyer"><LawyerDashboard /></ProtectedRoute>} />
+                    {/* Lawyer Routes */}
+                    <Route path="lawyer" element={<ProtectedRoute role="lawyer"><LawyerLayout /></ProtectedRoute>}>
+                        <Route index element={<LawyerVerify />} />
+                        <Route path="verify" element={<LawyerVerify />} />
+                        <Route path="history" element={<LawyerHistory />} />
+                        <Route path="bookings" element={<LawyerBookings />} />
+                        <Route path="notifications" element={<LawyerNotifications />} />
+                        <Route path="profile" element={<DashboardLawyerProfile />} />
+                    </Route>
 
                     {/* Catch-all redirect to login or root if accessing /dashboard directly without a role route */}
                     <Route index element={<Navigate to="/" replace />} />

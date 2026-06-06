@@ -5,6 +5,8 @@ import Topbar from './Topbar'
 import { useAuth } from '../../hooks/AuthContext'
 import { buyerNavigation } from '../../config/navigation/buyerNavigation'
 import { agentNavigation } from '../../config/navigation/agentNavigation'
+import { sellerNavigation } from '../../config/navigation/sellerNavigation'
+import { lawyerNavigation } from '../../config/navigation/lawyerNavigation'
 
 export default function DashboardLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -18,7 +20,10 @@ export default function DashboardLayout() {
     }, [location.pathname])
 
     const getSidebarLinks = () => {
-        if (user?.role?.toLowerCase() === 'agent') return agentNavigation
+        const role = user?.role?.toLowerCase()
+        if (role === 'agent') return agentNavigation
+        if (role === 'seller') return sellerNavigation
+        if (role === 'lawyer') return lawyerNavigation
         return buyerNavigation // fallback to buyer for now
     }
 
